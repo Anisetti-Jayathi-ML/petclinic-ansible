@@ -1,0 +1,84 @@
+---
+
+- name: Install OpenJDK 17
+  ansible.builtin.apt:
+    name: openjdk-17-jdk
+    state: present
+- name: Install Maven
+  ansible.builtin.apt:
+    name: maven
+    state: present
+- name: Check if directory exists
+  stat:
+    path: "/opt/spring-boot-app"
+  register: spring_boot_app_directory
+
+- name: Clone Spring Boot Application from Github
+  become: yes
+  vars:
+    ansible_become_password: Maplelabs@123
+  git:
+    repo: 'https://github.com/Anisetti-Jayathi-ML/spring-petclinic.git'
+    dest: '/opt/spring-boot-app'
+    clone: yes
+    force: yes
+
+
+- name: Copy application.properties
+  become: yes
+  vars:
+    ansible_become_password: Maplelabs@123
+  template:
+    src: application.properties
+    dest: "/opt/spring-boot-app/src/main/resources/application.properties"
+    force: yes
+
+- name: Copy petclinic service script to /etc/systemd/system/
+  become: yes
+  vars:
+    ansible_become_password: Maplelabs@123
+  template:
+    src: env
+    dest: "/opt/spring-boot-app/.env"
+    force: yes
+
+- name: Build JAR file
+  become: yes
+  vars:
+    ansible_become_password: Maplelabs@123
+  shell:
+    cmd: |
+      mvn spring-javaformat:apply
+      mvn -f pom.xml clean package
+  args:
+    chdir: /opt/spring-boot-app
+
+
+- name: Copy petclinic service script to /etc/systemd/system/
+  become: yes
+  vars:
+    ansible_become_password: Maplelabs@123
+  template:
+    src: petclinic.service
+    dest: "/etc/systemd/system/petclinic.service"
+    force: yes
+    mode: '0644'
+
+
+- name: Reload systemd daemon to pick up changes
+  become: yes
+  vars:
+    ansible_become_password: Maplelabs@123
+  systemd:
+    daemon_reload: yes
+
+
+
+- name: Start and enable petclinic services for automatic start
+  become: yes
+  vars:
+    ansible_become_password: Maplelabs@123
+  systemd:
+    state: restarted
+    name: petclinic.service
+    enabled: yes
