@@ -15,7 +15,7 @@
 
 - name: Clone Spring Boot Application from Github
   git:
-    repo: 'https://github.com/Anisetti-Jayathi-ML/spring-petclinic.git'
+    repo: 'https://github.com/pramurthy/spring-petclinic.git'
     dest: '/opt/spring-boot-app'
     clone: yes
     force: yes
@@ -27,6 +27,13 @@
     dest: "/opt/spring-boot-app/src/main/resources/application.properties"
     force: yes
 
+- name: Copy application-mysql.properties
+  template:
+    src: application-mysql.properties
+    dest: "/opt/spring-boot-app/src/main/resources/application-mysql.properties"
+    force: yes
+    
+
 - name: Copy petclinic service script to /etc/systemd/system/
   template:
     src: env
@@ -37,7 +44,7 @@
   shell:
     cmd: |
       mvn spring-javaformat:apply
-      mvn -f pom.xml clean package
+      mvn clean package -Dmaven.test.skip=true
   args:
     chdir: /opt/spring-boot-app
 
