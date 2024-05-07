@@ -1,1 +1,1 @@
-ansible-playbook playbook.yaml -i hosts.ini -Kk
+ansible-playbook playbook.yaml -i hosts.ini
